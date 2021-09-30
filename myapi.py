@@ -36,7 +36,7 @@ app = FastAPI()
 def get_data():
     query = "SELECT * FROM [mydb].[dbo].[Table_1] order by PersonID ASC"
     data = pd.read_sql(query, conn).fillna("")
-    obj = data.to_dict()
+    obj = data.to_dict(orient="records")
     return obj
 
 
@@ -51,7 +51,10 @@ def post_data(person_data: PersonData):
     INSERT INTO [mydb].[dbo].[Table_1]
     (PersonID, FirstName, LastName, ModifiedDate) VALUES ({}, '{}', '{}','{}')
     """.format(
-        person_data.person_id, person_data.first_name, person_data.last_name, modified_date
+        person_data.person_id,
+        person_data.first_name,
+        person_data.last_name,
+        modified_date,
     )
     print("QUERY: ", query)
     cursor.execute(query)
@@ -71,7 +74,7 @@ def post_data(person_data: PersonData):
 # Update data in database using that api
 @app.post("/update_data")
 def update_data(person_data: PersonData):
-    
+
     cursor = conn.cursor()
     update_query = """
     UPDATE [mydb].[dbo].[Table_1]
@@ -93,8 +96,8 @@ def update_data(person_data: PersonData):
 
 # Delete a complete row data using this delete method
 @app.delete("/delete_data>")
-def del_data(delete_data : del_data):
-    
+def del_data(delete_data: del_data):
+
     cursor = conn.cursor()
     delete_query = """
     DELETE FROM [mydb].[dbo].[Table_1]
