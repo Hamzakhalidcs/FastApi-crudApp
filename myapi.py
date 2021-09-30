@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 import sys
 import pandas as pd
 from datetime import datetime as dt
