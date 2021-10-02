@@ -1,27 +1,25 @@
 from fastapi import FastAPI
+import os
 import sys
 import pandas as pd
 from datetime import datetime as dt
 import pyodbc
-from pydantic import BaseModel
+from classes import PersonData, del_data
+from dotenv import load_dotenv
+load_dotenv()
 
-
-class PersonData(BaseModel):
-    person_id: int
-    first_name: str
-    last_name: str
-
-class del_data(BaseModel):
-    person_id : int
-
+driver = os.getenv("driver")
+server = os.getenv("server")
+database = os.getenv("database") 
 
 try:
     conn = pyodbc.connect(
-        "Driver={SQL Server};"
-        "Server=DESKTOP-959UNBS;"
-        "Database=mydb;"
+        "Driver="+driver+';'
+        "Server="+server+';'
+        "Database="+database+';'
         "Trusted_Connection=yes;"
     )
+
 
     print("Connected Succesfully")
 
