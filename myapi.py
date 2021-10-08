@@ -4,23 +4,24 @@ import sys
 import pandas as pd
 from datetime import datetime as dt
 import pyodbc
-from classes import PersonData, del_data
+from classes import *
 from dotenv import load_dotenv
+
 load_dotenv()
 
 driver = os.getenv("driver")
 server = os.getenv("server")
-database = os.getenv("database") 
+database = os.getenv("database")
+table = os.getenv("table_name")
 
 try:
     conn = pyodbc.connect(
-        "Driver="+driver+';'
-        "Server="+server+';'
-        "Database="+database+';'
-        "Trusted_Connection=yes;"
+        "Driver= {};"
+        "Server={};"
+        "Database={};"
+        "port = 1433;"
+        "Trusted_Connection=yes;".format(driver, server, database)
     )
-
-
     print("Connected Succesfully")
 
 except:
@@ -32,40 +33,44 @@ app = FastAPI()
 # Getting data from database using this Api
 @app.get("/get_data")
 def get_data():
-    query = "SELECT * FROM [mydb].[dbo].[Table_1] order by PersonID ASC"
+    query = ("SELECT * FROM [{}].[dbo].[{}] order by UserId ASC").format(
+        database, table
+    )
     data = pd.read_sql(query, conn).fillna("")
     obj = data.to_dict(orient="records")
+    print("QUERY: ", query)
     return obj
 
 
-# Inserting data in to databse this ......
+# Inserting data using post request
 @app.post("/post_data")
 def post_data(person_data: PersonData):
-    print(person_data)
-    modified_date = str(dt.today())[:19]
-
     cursor = conn.cursor()
     query = """
-    INSERT INTO [mydb].[dbo].[Table_1]
-    (PersonID, FirstName, LastName, ModifiedDate) VALUES ({}, '{}', '{}','{}')
+    INSERT INTO 
+    (UserId, Name, CNIC, Phone, Mobile, Address,
+    City, PostingDate, LastUpdate, IsDoctor, PictureUrl, Comments)
+    VALUES ({}, '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {}, '{}')
     """.format(
-        person_data.person_id,
-        person_data.first_name,
-        person_data.last_name,
-        modified_date,
+        person_data.user_id,
+        person_data.name,
+        person_data.cnic,
+        person_data.phone,
+        person_data.mobile,
+        person_data.address,
+        person_data.city,
+        person_data.PostingDate,
+        person_data.Lastupdate,
+        person_data.is_doctor,
+        person_data.picture_url,
+        person_data.comments,
     )
-    print("QUERY: ", query)
     cursor.execute(query)
     cursor.commit()
     cursor.close()
+    print("QUERY: ", query)
     return {
-        "suscess": True,
-        "data": {
-            "PersonID": person_data.person_id,
-            "First Name": person_data.first_name,
-            "Last Name": person_data.last_name,
-            "ModifiedDate": modified_date,
-        },
+        "success": True,
     }
 
 
@@ -75,13 +80,27 @@ def update_data(person_data: PersonData):
 
     cursor = conn.cursor()
     update_query = """
-    UPDATE [mydb].[dbo].[Table_1]
-    SET FirstName= '{}', LastName = '{}' 
+    UPDATE [{}].[dbo].[{}]
+    SET UserId= {}, Name = '{}', CNIC= '{}', Phone = {},
+    Mobile= {},  Address = '{}', City = '{}', PostingDate = '{}',
+    LastUpdate = '{}', IsDoctor = '{}', PictureUrl='{}', Comments = '{}'
     WHERE PersonID={};""".format(
-        person_data.first_name, person_data.last_name, person_data.person_id
+        database, 
+        table,
+        person_data.user_id,
+        person_data.name,
+        person_data.cnic,
+        person_data.phone,
+        person_data.mobile,
+        person_data.address,
+        person_data.city,
+        person_data.PostingDate,
+        person_data.Lastupdate,
+        person_data.is_doctor,
+        person_data.picture_url,
+        person_data.comments,
     )
     print("QUERY: ", update_query)
-
     cursor.execute(update_query)
     cursor.commit()
     cursor.close()
@@ -98,9 +117,9 @@ def del_data(delete_data: del_data):
 
     cursor = conn.cursor()
     delete_query = """
-    DELETE FROM [mydb].[dbo].[Table_1]
+    DELETE FROM [{}].[dbo].[{}]
     WHERE PersonID={};""".format(
-        delete_data.person_id
+        database, table, delete_data.person_id
     )
     print("QUERY: ", delete_query)
 
