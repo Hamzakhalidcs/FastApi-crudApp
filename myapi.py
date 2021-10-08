@@ -84,7 +84,7 @@ def update_data(person_data: PersonData):
     SET UserId= {}, Name = '{}', CNIC= '{}', Phone = {},
     Mobile= {},  Address = '{}', City = '{}', PostingDate = '{}',
     LastUpdate = '{}', IsDoctor = '{}', PictureUrl='{}', Comments = '{}'
-    WHERE PersonID={};""".format(
+    WHERE UserId={};""".format(
         database, 
         table,
         person_data.user_id,
