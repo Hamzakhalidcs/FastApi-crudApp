@@ -46,12 +46,15 @@ def get_data():
 @app.post("/post_data")
 def post_data(person_data: PersonData):
     cursor = conn.cursor()
+    print('checking')
     query = """
-    INSERT INTO 
+    INSERT INTO [{}].[dbo].[{}]
     (UserId, Name, CNIC, Phone, Mobile, Address,
-    City, PostingDate, LastUpdate, IsDoctor, PictureUrl, Comments)
-    VALUES ({}, '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', '{}', {}, '{}')
+    City, PictureUrl, Comments)
+    VALUES ({}, '{}', '{}', '{}', '{}', '{}', '{}', {}, '{}')
     """.format(
+        database,
+        table,
         person_data.user_id,
         person_data.name,
         person_data.cnic,
@@ -59,16 +62,16 @@ def post_data(person_data: PersonData):
         person_data.mobile,
         person_data.address,
         person_data.city,
-        person_data.PostingDate,
-        person_data.Lastupdate,
-        person_data.is_doctor,
+        # person_data.posting_date,
         person_data.picture_url,
-        person_data.comments,
+        person_data.comments
     )
+    print("QUERY: ", query)
+    print('here')
     cursor.execute(query)
     cursor.commit()
     cursor.close()
-    print("QUERY: ", query)
+
     return {
         "success": True,
     }
@@ -82,10 +85,10 @@ def update_data(person_data: PersonData):
     update_query = """
     UPDATE [{}].[dbo].[{}]
     SET UserId= {}, Name = '{}', CNIC= '{}', Phone = {},
-    Mobile= {},  Address = '{}', City = '{}', PostingDate = '{}',
-    LastUpdate = '{}', IsDoctor = '{}', PictureUrl='{}', Comments = '{}'
+    Mobile= {},  Address = '{}', City = '{}',
+    PictureUrl='{}', Comments = '{}'
     WHERE UserId={};""".format(
-        database, 
+        database,
         table,
         person_data.user_id,
         person_data.name,
@@ -94,11 +97,9 @@ def update_data(person_data: PersonData):
         person_data.mobile,
         person_data.address,
         person_data.city,
-        person_data.PostingDate,
-        person_data.Lastupdate,
-        person_data.is_doctor,
         person_data.picture_url,
         person_data.comments,
+        person_data.user_id
     )
     print("QUERY: ", update_query)
     cursor.execute(update_query)
@@ -118,8 +119,8 @@ def del_data(delete_data: del_data):
     cursor = conn.cursor()
     delete_query = """
     DELETE FROM [{}].[dbo].[{}]
-    WHERE PersonID={};""".format(
-        database, table, delete_data.person_id
+    WHERE UserId = {};""".format(
+        database, table, delete_data.user_id
     )
     print("QUERY: ", delete_query)
 
