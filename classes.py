@@ -1,4 +1,3 @@
-from typing import Text
 from pydantic import BaseModel
 from datetime import  datetime
 
@@ -16,3 +15,8 @@ class PersonData(BaseModel):
 
 class del_data(BaseModel):
     user_id: int
+
+class app_reviews(BaseModel):
+    user_id : int
+    rating : int
+    comments : str

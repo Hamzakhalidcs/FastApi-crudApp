@@ -13,6 +13,7 @@ driver = os.getenv("driver")
 server = os.getenv("server")
 database = os.getenv("database")
 table = os.getenv("table_name")
+app_review_table = os.getenv("app_review_table")
 
 try:
     conn = pyodbc.connect(
@@ -62,7 +63,6 @@ def post_data(person_data: PersonData):
         person_data.mobile,
         person_data.address,
         person_data.city,
-        # person_data.posting_date,
         person_data.picture_url,
         person_data.comments
     )
@@ -84,13 +84,12 @@ def update_data(person_data: PersonData):
     cursor = conn.cursor()
     update_query = """
     UPDATE [{}].[dbo].[{}]
-    SET UserId= {}, Name = '{}', CNIC= '{}', Phone = {},
+    SET Name = '{}', CNIC= '{}', Phone = {},
     Mobile= {},  Address = '{}', City = '{}',
     PictureUrl='{}', Comments = '{}'
     WHERE UserId={};""".format(
         database,
         table,
-        person_data.user_id,
         person_data.name,
         person_data.cnic,
         person_data.phone,
@@ -128,3 +127,63 @@ def del_data(delete_data: del_data):
     cursor.commit()
     cursor.close()
     return ({"message": "Data delete successfully"},)
+
+#  CRUD for app_reviews
+@app.get("/get_app_reviews")
+def get_data():
+    query = ("SELECT * FROM [{}].[dbo].[{}] order by UserId ASC").format(
+        database, app_review_table
+    )
+    data = pd.read_sql(query, conn).fillna("")
+    obj = data.to_dict(orient="records")
+    print("QUERY: ", query)
+    return obj
+
+
+@app.post("/post_app_reviews")
+def post_app_reviews(app_review: app_reviews):
+    cursor = conn.cursor()
+    print('checking')
+    query_app_reviews= """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, Rating, Comments)
+    VALUES ({},  {}, '{}')
+    """.format(
+        database,
+        app_review_table,
+        app_review.user_id,
+        app_review.rating,
+        app_review.comments
+    )
+    print("QUERY: ", query_app_reviews)
+    cursor.execute(query_app_reviews)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+@app.post("/update_app_review_data")
+def update_data(update_app_review: app_reviews):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET Rating = {}, Comments = '{}'
+    WHERE UserId={};""".format(
+        database,
+        app_review_table,
+        update_app_review.rating,
+        update_app_review.comments,
+        update_app_review.user_id
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
