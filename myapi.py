@@ -195,7 +195,7 @@ def del_data(delete_review_data: del_data):
     delete_app_review_query = """
     DELETE FROM [{}].[dbo].[{}]
     WHERE UserId = {};""".format(
-        database, app_review_table, del_app_review_data.user_id
+        database, app_review_table, delete_review_data.user_id
     )
     print("QUERY: ", delete_app_review_query)
 
