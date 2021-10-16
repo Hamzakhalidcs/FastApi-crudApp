@@ -187,3 +187,19 @@ def update_data(update_app_review: app_reviews):
             "success": True,
         },
     )
+
+@app.delete("/delete_app_review_data>")
+def del_data(delete_review_data: del_data):
+
+    cursor = conn.cursor()
+    delete_app_review_query = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE UserId = {};""".format(
+        database, app_review_table, del_app_review_data.user_id
+    )
+    print("QUERY: ", delete_app_review_query)
+
+    cursor.execute(delete_app_review_query)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
