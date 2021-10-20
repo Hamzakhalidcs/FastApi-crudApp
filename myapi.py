@@ -14,6 +14,7 @@ server = os.getenv("server")
 database = os.getenv("database")
 table = os.getenv("table_name")
 app_review_table = os.getenv("app_review_table")
+app_insight = os.getenv("app_insights")
 
 try:
     conn = pyodbc.connect(
@@ -47,7 +48,7 @@ def get_data():
 @app.post("/post_data")
 def post_data(person_data: PersonData):
     cursor = conn.cursor()
-    print('checking')
+    print("checking")
     query = """
     INSERT INTO [{}].[dbo].[{}]
     (UserId, Name, CNIC, Phone, Mobile, Address,
@@ -64,10 +65,10 @@ def post_data(person_data: PersonData):
         person_data.address,
         person_data.city,
         person_data.picture_url,
-        person_data.comments
+        person_data.comments,
     )
     print("QUERY: ", query)
-    print('here')
+    print("here")
     cursor.execute(query)
     cursor.commit()
     cursor.close()
@@ -98,7 +99,7 @@ def update_data(person_data: PersonData):
         person_data.city,
         person_data.picture_url,
         person_data.comments,
-        person_data.user_id
+        person_data.user_id,
     )
     print("QUERY: ", update_query)
     cursor.execute(update_query)
@@ -128,6 +129,7 @@ def del_data(delete_data: del_data):
     cursor.close()
     return ({"message": "Data delete successfully"},)
 
+
 #  CRUD for app_reviews
 @app.get("/get_app_reviews")
 def get_data():
@@ -143,8 +145,8 @@ def get_data():
 @app.post("/post_app_reviews")
 def post_app_reviews(app_review: app_reviews):
     cursor = conn.cursor()
-    print('checking')
-    query_app_reviews= """
+    print("checking")
+    query_app_reviews = """
     INSERT INTO [{}].[dbo].[{}]
     (UserId, Rating, Comments)
     VALUES ({},  {}, '{}')
@@ -153,7 +155,7 @@ def post_app_reviews(app_review: app_reviews):
         app_review_table,
         app_review.user_id,
         app_review.rating,
-        app_review.comments
+        app_review.comments,
     )
     print("QUERY: ", query_app_reviews)
     cursor.execute(query_app_reviews)
@@ -163,6 +165,7 @@ def post_app_reviews(app_review: app_reviews):
     return {
         "success": True,
     }
+
 
 @app.post("/update_app_review_data")
 def update_data(update_app_review: app_reviews):
@@ -176,7 +179,7 @@ def update_data(update_app_review: app_reviews):
         app_review_table,
         update_app_review.rating,
         update_app_review.comments,
-        update_app_review.user_id
+        update_app_review.user_id,
     )
     print("QUERY: ", update_query)
     cursor.execute(update_query)
@@ -188,8 +191,9 @@ def update_data(update_app_review: app_reviews):
         },
     )
 
+
 @app.delete("/delete_app_review_data>")
-def del_data(delete_review_data: del_data):
+def del_data(delete_review_data: del_app_review_data):
 
     cursor = conn.cursor()
     delete_app_review_query = """
@@ -200,6 +204,81 @@ def del_data(delete_review_data: del_data):
     print("QUERY: ", delete_app_review_query)
 
     cursor.execute(delete_app_review_query)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
+
+
+#  CRUD for app_insight table
+@app.get("/get_data_app_insights")
+def get_data():
+    query = ("SELECT * FROM [{}].[dbo].[{}]").format(database, app_insight)
+    data = pd.read_sql(query, conn).fillna("")
+    obj = data.to_dict(orient="records")
+    print("QUERY: ", query)
+    return obj
+
+
+@app.post("/post_app_insights")
+def post_app_insights(app_insight_model: app_insights_model):
+    cursor = conn.cursor()
+    query_app_insights = """
+    INSERT INTO [{}].[dbo].[{}]
+    (Description, SubDescription, DocumentId)
+    VALUES ('{}', '{}', {})
+    """.format(
+        database,
+        app_insight,
+        app_insight_model.description,
+        app_insight_model.sub_description,
+        app_insight_model.document_id,
+    )
+    print("QUERY: ", query_app_insights)
+    cursor.execute(query_app_insights)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+
+@app.post("/update_app_insights")
+def update_data(update_app_insights: app_insights_model):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET Description = '{}', SubDescription = '{}'
+    WHERE DocumentId={};""".format(
+        database,
+        app_insight,
+        update_app_insights.description,
+        update_app_insights.sub_description,
+        update_app_insights.document_id,
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_app_insight_data/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete_app_insight = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, app_insight, id
+    )
+    print("QUERY: ", delete_app_insight)
+
+    cursor.execute(delete_app_insight)
     cursor.commit()
     cursor.close()
     return ({"message": "Data delete successfully"},)
