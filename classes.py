@@ -1,4 +1,5 @@
 from typing import Text
+from pandas.core import base
 from pydantic import BaseModel
 from datetime import  datetime
 
@@ -40,3 +41,8 @@ class app_attachments(BaseModel):
     document_url : str
     description : str
     tag : str
+
+class app_prescription(BaseModel):
+    user_id : int
+    doctor_id : int
+    prescription_doc_id : int

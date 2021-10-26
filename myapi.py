@@ -18,6 +18,7 @@ app_review_table = os.getenv("app_review_table")
 app_insight = os.getenv("app_insights")
 doc_spec = os.getenv("doc_spec")
 app_attach = os.getenv("app_attachmensts")
+app_pres = os.getenv("app_prescription")
 
 try:
     conn = pyodbc.connect(
@@ -431,14 +432,89 @@ def update_data(update_app_attach : app_attachments):
 def del_data(id:int):
 
     cursor = conn.cursor()
-    delete_app_insight = """
+    delete_app_attach = """
     DELETE FROM [{}].[dbo].[{}]
     WHERE DocumentId = {};""".format(
         database, app_attach, id
     )
-    print("QUERY: ", delete_app_insight)
+    print("QUERY: ", delete_app_attach)
 
-    cursor.execute(delete_app_insight)
+    cursor.execute(delete_app_attach)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
+
+
+# CRUD for app_prescription
+@app.get('/get_data_app_prescription')
+def get_doc_spec():
+    query = ("SELECT * FROM [{}]. [dbo].[{}]").format(database, app_pres)
+    data = pd.read_sql(query, conn).fillna("")
+    obj  = data.to_dict(orient="records")
+    print("Query", query)
+    return obj
+
+@app.post("/post_app_prescription")
+def post_doc_spec(app_prescription : app_prescription):
+    cursor = conn.cursor()
+    query_doc_spec = """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, DoctorId, PrescriptionDocId)
+    VALUES ({}, {}, {})
+    """.format(
+        database,
+        app_pres, 
+        app_prescription.user_id,
+        app_prescription.doctor_id,
+        app_prescription.prescription_doc_id
+
+    )
+    print("QUERY: ", query_doc_spec)
+    cursor.execute(query_doc_spec)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+@app.post("/update_app_prescription_data")
+def update_data(update_app_presc : app_prescription):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET DoctorId = {}, PrescriptionDocId = {}
+    WHERE UserId={};""".format(
+        database,
+        app_pres,
+        update_app_presc.doctor_id, 
+        update_app_presc.prescription_doc_id,
+        update_app_presc.user_id
+        
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_app_prescription/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete_app_presc = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, app_attach, id
+    )
+    print("QUERY: ", delete_app_presc)
+
+    cursor.execute(delete_app_presc)
     cursor.commit()
     cursor.close()
     return ({"message": "Data delete successfully"},)
