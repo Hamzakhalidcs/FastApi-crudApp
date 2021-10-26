@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import os
 import sys
+from numpy import record
 import pandas as pd
 from datetime import datetime as dt
 import pyodbc
@@ -15,6 +16,8 @@ database = os.getenv("database")
 table = os.getenv("table_name")
 app_review_table = os.getenv("app_review_table")
 app_insight = os.getenv("app_insights")
+doc_spec = os.getenv("doc_spec")
+app_attach = os.getenv("app_attachmensts")
 
 try:
     conn = pyodbc.connect(
@@ -275,6 +278,163 @@ def del_data(id:int):
     DELETE FROM [{}].[dbo].[{}]
     WHERE DocumentId = {};""".format(
         database, app_insight, id
+    )
+    print("QUERY: ", delete_app_insight)
+
+    cursor.execute(delete_app_insight)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
+
+
+# CRUD for doc_speciality 
+
+@app.get('/get_data_doc_spec')
+def get_doc_spec():
+    query = ("SELECT * FROM [{}]. [dbo].[{}]").format(database, doc_spec)
+    data = pd.read_sql(query, conn).fillna("")
+    obj  = data.to_dict(orient="records")
+    print("Query", query)
+    return obj
+
+
+# post_data for app_doc_speciality
+@app.post("/post_doc_speciality")
+def post_doc_spec(doc_speciality_model : app_doc_speciality):
+    cursor = conn.cursor()
+    query_doc_spec = """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, SpecialityTag, Description)
+    VALUES ({}, '{}', '{}')
+    """.format(
+        database,
+        doc_spec,
+        doc_speciality_model.user_id,
+        doc_speciality_model.spec_tag,
+        doc_speciality_model.description,
+    )
+    print("QUERY: ", query_doc_spec)
+    cursor.execute(query_doc_spec)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+
+@app.post("/update_doc_spec")
+def update_data(update_doc_spec: app_doc_speciality):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET SpecialityTag = '{}', Description = '{}'
+    WHERE UserId={};""".format(
+        database,
+        app_insight,
+        update_doc_spec.user_id,
+        update_doc_spec.spec_tag,
+        update_doc_spec.description,
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_doc_spec/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, doc_spec, id
+    )
+    print("QUERY: ", delete)
+
+    cursor.execute(delete)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
+
+# CRUD for app_attachments
+@app.get("/get_app_attachments_data")
+def get_data():
+    query = ("SELECT * FROM [{}].[dbo].[{}] order by UserId ASC").format(
+        database, app_attach
+    )
+    data = pd.read_sql(query, conn).fillna("")
+    obj = data.to_dict(orient="records")
+    print("QUERY: ", query)
+    return obj
+
+
+@app.post("/post_app_attachments")
+def post_doc_spec(app_attach_model : app_attachments):
+    cursor = conn.cursor()
+    query_doc_spec = """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, DocumentUrl, Description, Tag)
+    VALUES ({}, '{}', '{}', '{}')
+    """.format(
+        database,
+        app_attach,
+        app_attach_model.user_id,
+        app_attach_model.document_url,
+        app_attach_model.description,
+        app_attach_model.tag
+
+    )
+    print("QUERY: ", query_doc_spec)
+    cursor.execute(query_doc_spec)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+
+@app.post("/update_app_attachments_data")
+def update_data(update_app_attach : app_attachments):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET DocumentUrl = '{}', Description = '{}', Tag = '{}'
+    WHERE UserId={};""".format(
+        database,
+        app_attach,
+        update_app_attach.document_url, 
+        update_app_attach.description,
+        update_app_attach.tag,
+        update_app_attach.user_id
+        
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_app_attachments/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete_app_insight = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, app_attach, id
     )
     print("QUERY: ", delete_app_insight)
 

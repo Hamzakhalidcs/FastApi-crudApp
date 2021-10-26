@@ -29,3 +29,14 @@ class app_insights_model(BaseModel):
     description : str
     sub_description : str
     document_id : int
+
+class app_doc_speciality(BaseModel):
+    user_id : int 
+    spec_tag : str
+    description : str
+
+class app_attachments(BaseModel):
+    user_id  : int
+    document_url : str
+    description : str
+    tag : str
