@@ -669,3 +669,76 @@ def del_data(id:int):
     cursor.commit()
     cursor.close()
     return ({"message": "Data delete successfully"},)
+
+# CRUD for app_doc_accessibility_tags
+@app.get('/get_data_app_doc_accessibility_tags')
+def get_doc_spec():
+    query = ("SELECT * FROM [{}]. [dbo].[{}]").format(database, app_doc_accessibility)
+    data = pd.read_sql(query, conn).fillna("")
+    obj  = data.to_dict(orient="records")
+    print("Query", query)
+    return obj
+
+@app.post("/post_app_doc_accessibility_tags")
+def post_doc_spec(app_acc_tags : app_doc_accessibility_tags):
+    cursor = conn.cursor()
+    query = """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, Tag, Comments)
+    VALUES ({}, '{}', '{}')
+    """.format(
+        database,
+        app_doc_accessibility,
+        app_acc_tags.user_id,
+        app_acc_tags.tag,
+        app_acc_tags.comments
+
+    )
+    print("QUERY: ", query)
+    cursor.execute(query)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+@app.post("/update_app_accessibility_tags")
+def update_data(update_app_acc_tags : app_doc_accessibility_tags):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET Tag = '{}', Comments = '{}'
+    WHERE UserId={};""".format(
+        database,
+        app_doc_accessibility,
+        update_app_acc_tags.tag,
+        update_app_acc_tags.comments,
+        update_app_acc_tags.user_id
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_app_accessibility_tags/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete_app_presc = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, app_doc_accessibility, id
+    )
+    print("QUERY: ", delete_app_presc)
+
+    cursor.execute(delete_app_presc)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)

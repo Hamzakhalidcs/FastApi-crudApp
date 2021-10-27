@@ -60,5 +60,5 @@ class app_login(BaseModel):
 
 class app_doc_accessibility_tags(BaseModel):
     user_id : int
-    user_name : int
-    password : str
+    tag : str
+    comments : str
