@@ -727,6 +727,7 @@ def update_data(update_app_acc_tags : app_doc_accessibility_tags):
         },
     )
 
+# Added some comments
 @app.delete("/delete_app_accessibility_tags/{id}")
 def del_data(id:int):
 
