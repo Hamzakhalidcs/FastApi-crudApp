@@ -46,3 +46,19 @@ class app_prescription(BaseModel):
     user_id : int
     doctor_id : int
     prescription_doc_id : int
+
+class app_doctor(BaseModel):
+    user_id : int 
+    year_of_experience : int
+    gender : str
+    availability : str
+
+class app_login(BaseModel):
+    user_id : int
+    user_name : str
+    password : str
+
+class app_doc_accessibility_tags(BaseModel):
+    user_id : int
+    user_name : int
+    password : str

@@ -19,6 +19,9 @@ app_insight = os.getenv("app_insights")
 doc_spec = os.getenv("doc_spec")
 app_attach = os.getenv("app_attachmensts")
 app_pres = os.getenv("app_prescription")
+app_doc_accessibility = os.getenv("app_doc_accessibility")
+app_logins = os.getenv("app_logins")
+app_doctors = os.getenv("app_doctor") 
 
 try:
     conn = pyodbc.connect(
@@ -511,6 +514,81 @@ def del_data(id:int):
     DELETE FROM [{}].[dbo].[{}]
     WHERE DocumentId = {};""".format(
         database, app_attach, id
+    )
+    print("QUERY: ", delete_app_presc)
+
+    cursor.execute(delete_app_presc)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
+
+# CRUD for app_doctors
+@app.get('/get_data_app_doctor')
+def get_doc_spec():
+    query = ("SELECT * FROM [{}]. [dbo].[{}]").format(database, app_doctors)
+    data = pd.read_sql(query, conn).fillna("")
+    obj  = data.to_dict(orient="records")
+    print("Query", query)
+    return obj
+
+@app.post("/post_app_prescription")
+def post_doc_spec(app_docs : app_doctor):
+    cursor = conn.cursor()
+    query = """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, YearOfExperience, Gender, Availability)
+    VALUES ({}, {}, '{}', '{}')
+    """.format(
+        database,
+        app_doctors,
+        app_docs.user_id,
+        app_docs.year_of_experience,
+        app_docs.gender,
+        app_docs.availability
+
+    )
+    print("QUERY: ", query)
+    cursor.execute(query)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+@app.post("/update_app_docs_data")
+def update_data(update_app_docs : app_doctor):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET YearOfExperience = {}, Gender = '{}', Availability = '{}'
+    WHERE UserId={};""".format(
+        database,
+        app_doctors,
+        update_app_docs.year_of_experience,
+        update_app_docs.gender,
+        update_app_docs.availability,
+        update_app_docs.user_id
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_app_doctors/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete_app_presc = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, app_doctors, id
     )
     print("QUERY: ", delete_app_presc)
 
