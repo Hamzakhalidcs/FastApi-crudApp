@@ -531,7 +531,7 @@ def get_doc_spec():
     print("Query", query)
     return obj
 
-@app.post("/post_app_prescription")
+@app.post("/post_app_doctors")
 def post_doc_spec(app_docs : app_doctor):
     cursor = conn.cursor()
     query = """
@@ -589,6 +589,79 @@ def del_data(id:int):
     DELETE FROM [{}].[dbo].[{}]
     WHERE DocumentId = {};""".format(
         database, app_doctors, id
+    )
+    print("QUERY: ", delete_app_presc)
+
+    cursor.execute(delete_app_presc)
+    cursor.commit()
+    cursor.close()
+    return ({"message": "Data delete successfully"},)
+
+# CRUD for app_logins
+@app.get('/get_data_app_logins')
+def get_doc_spec():
+    query = ("SELECT * FROM [{}]. [dbo].[{}]").format(database, app_logins)
+    data = pd.read_sql(query, conn).fillna("")
+    obj  = data.to_dict(orient="records")
+    print("Query", query)
+    return obj
+
+@app.post("/post_app_logins")
+def post_doc_spec(app_log : app_login):
+    cursor = conn.cursor()
+    query = """
+    INSERT INTO [{}].[dbo].[{}]
+    (UserId, UserName, Password)
+    VALUES ({}, '{}', '{}')
+    """.format(
+        database,
+        app_logins,
+        app_log.user_id,
+        app_log.user_name,
+        app_log.password
+
+
+    )
+    print("QUERY: ", query)
+    cursor.execute(query)
+    cursor.commit()
+    cursor.close()
+
+    return {
+        "success": True,
+    }
+
+@app.post("/update_app_logins_data")
+def update_data(update_app_log : app_login):
+
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE [{}].[dbo].[{}]
+    SET UserName = '{}', Password = '{}'
+    WHERE UserId={};""".format(
+        database,
+        update_app_log.user_name,
+        update_app_log.password,
+        update_app_log.user_id
+    )
+    print("QUERY: ", update_query)
+    cursor.execute(update_query)
+    cursor.commit()
+    cursor.close()
+    return (
+        {
+            "success": True,
+        },
+    )
+
+@app.delete("/delete_app_logins/{id}")
+def del_data(id:int):
+
+    cursor = conn.cursor()
+    delete_app_presc = """
+    DELETE FROM [{}].[dbo].[{}]
+    WHERE DocumentId = {};""".format(
+        database, app_logins, id
     )
     print("QUERY: ", delete_app_presc)
 
